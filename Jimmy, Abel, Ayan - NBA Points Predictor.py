@@ -8,30 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 
-#players_csv = pd.read_csv('C:/Users/jimmy_p2fa2zj/Documents/GitHub/NBAPointsPredictorProject/Players.csv', low_memory=False)
-#games_csv = pd.read_csv('C:/Users/jimmy_p2fa2zj/Documents/GitHub/NBAPointsPredictorProject/Games.csv', low_memory=False)
-#player_stats_csv = pd.read_csv('C:/Users/jimmy_p2fa2zj/Documents/GitHub/NBAPointsPredictorProject/PlayerStatistics.csv', low_memory=False)
 
-#print("Games Columns:", players_csv.columns.tolist())
-
-"""
-master_df = pd.merge(player_stats_csv, games_csv[['gameId', 'gameDateTimeEst', 'hometeamId', 'awayteamId']], on='gameId', how='left')
-
-master_df = pd.merge(master_df, players_csv[['personId', 'heightInches', 'bodyWeightLbs']], on='personId', how='left')
-
-master_df.to_csv('nba_master_dataset.csv', index=False)
-
-print("Master file created successfully!")
-"""
-
-filename = 'nba_master_dataset.csv'
-
-#absolute_path = os.path.abspath(filename)
-
-#print(absolute_path)
-
-
-df = pd.read_csv('nba_master_dataset.csv')
+df = pd.read_csv('C:/Users/jimmy_p2fa2zj/Documents/GitHub/NBAPointsPredictorProject/nba_master_dataset.csv')
 
 
 
@@ -41,18 +19,19 @@ df['numMinutes'] = df['numMinutes'].fillna(0)
 df = df[df['numMinutes'] > 0]
 
 # 5 games averages
-df['pts_rolling_5'] = df.groupby('personId')['points'].transform(lambda x: x.rolling(window=5, closed='left').mean())
+df['pts_rolling_window'] = df.groupby('personId')['points'].transform(lambda x: x.rolling(window=10, closed='left').mean())
 
 
 # drop not a number for 5 game avarages and points
-df = df.dropna(subset=['pts_rolling_5'])
+df = df.dropna(subset=['pts_rolling_window'])
 
-features = ['pts_rolling_5']
+features = ['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade']
 X = df[features]
 y = df['points']
 
 # training for 80% of the data and it tests itself on the rest of the 20%
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+
 
 model = LinearRegression()
 model.fit(X_train, y_train)
@@ -66,12 +45,6 @@ print(f"Mean Absolute Error: {mae:.2f} points")
 
 
 coeff_df = pd.DataFrame(model.coef_, features, columns=['Coefficient'])
-
-# print out pts_rolling_5
-# if output for that is equal to 1, model predicts the player to score exactly the same amount of pounts as their last 5 games
-# The model prints out 0.858 for pts_rolling_5 which means that it predicts the player to slightly shoot worse than their last 5 games
-print("\nFeature Importance:")
-print(coeff_df) 
 
 # combining first name and last name
 df['full_name'] = df['firstName'].str.strip().str.lower() + ' ' + df['lastName'].str.strip().str.lower()
@@ -89,13 +62,17 @@ def predict_player_points(player_name, df, model):
     latest_game = player_data.iloc[0]
     
     
-    current_features = np.array([[latest_game['pts_rolling_5']]])
+    current_features = latest_game[['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade']].fillna(0).values.reshape(1, -1)
+
 
     prediction = model.predict(current_features)
     
     return prediction[0]
 
+
+
 # individual player prediction
+print("Sample Prediction \n")
 name = "Luka Doncic"
 pred = predict_player_points(name, df, model)
 print(f"Predicted points for {name} in his next game: {pred:.1f}")
