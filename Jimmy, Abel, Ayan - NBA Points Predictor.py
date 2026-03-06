@@ -25,7 +25,7 @@ df['pts_rolling_window'] = df.groupby('personId')['points'].transform(lambda x: 
 # drop not a number for 5 game avarages and points
 df = df.dropna(subset=['pts_rolling_window'])
 
-features = ['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade']
+features = ['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade', 'freeThrowsAttempted', 'freeThrowsMade']
 X = df[features]
 y = df['points']
 
@@ -62,7 +62,7 @@ def predict_player_points(player_name, df, model):
     latest_game = player_data.iloc[0]
     
     
-    current_features = latest_game[['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade']].fillna(0).values.reshape(1, -1)
+    current_features = latest_game[['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade', 'freeThrowsAttempted', 'freeThrowsMade']].fillna(0).values.reshape(1, -1)
 
 
     prediction = model.predict(current_features)
