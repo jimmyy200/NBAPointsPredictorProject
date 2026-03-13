@@ -8,6 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 
+#  GitHub: https://github.com/jimmyy200/NBAPointsPredictorProject/tree/main (Dataset files are in there)
+
 
 df = pd.read_csv('C:/Users/jimmy_p2fa2zj/Documents/GitHub/NBAPointsPredictorProject/nba_master_dataset.csv')
 
@@ -18,11 +20,11 @@ df['numMinutes'] = pd.to_numeric(df['numMinutes'], errors='coerce')
 df['numMinutes'] = df['numMinutes'].fillna(0)
 df = df[df['numMinutes'] > 0]
 
-# 5 games averages
+# 10 games averages
 df['pts_rolling_window'] = df.groupby('personId')['points'].transform(lambda x: x.rolling(window=10, closed='left').mean())
 
 
-# drop not a number for 5 game avarages and points
+# drop not a number for 10 game avarages and points
 df = df.dropna(subset=['pts_rolling_window'])
 
 features = ['pts_rolling_window', 'assists', 'fieldGoalsAttempted', 'fieldGoalsMade', 'freeThrowsAttempted', 'freeThrowsMade']
@@ -39,12 +41,8 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 # Mean absolute error tells us exactly how much the model can expect to be off by
-# MAE is currently 4.61 points off, meaning that if the model predicts the player to score 25 points, the player should be expected to score 20-30 points
-mae = mean_absolute_error(y_test, y_pred)
+# MAE is currently 0.67 points off so predicted values are pretty close to actual values
 print(f"Mean Absolute Error: {mae:.2f} points")
-
-
-coeff_df = pd.DataFrame(model.coef_, features, columns=['Coefficient'])
 
 # combining first name and last name
 df['full_name'] = df['firstName'].str.strip().str.lower() + ' ' + df['lastName'].str.strip().str.lower()
