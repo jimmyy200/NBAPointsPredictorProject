@@ -42,6 +42,7 @@ y_pred = model.predict(X_test)
 
 # Mean absolute error tells us exactly how much the model can expect to be off by
 # MAE is currently 0.67 points off so predicted values are pretty close to actual values
+mae = mean_absolute_error(y_test, y_pred)
 print(f"Mean Absolute Error: {mae:.2f} points")
 
 # combining first name and last name
